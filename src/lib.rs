@@ -54,7 +54,7 @@ mod tests {
     }
 
     mod get {
-        fn inserted(a: (u32, u32), b: (u32, u32)) -> crate::Timeline::<(u32, u32)> {
+        fn inserted(a: (u32, u32), b: (u32, u32)) -> crate::Timeline<(u32, u32)> {
             let mut timeline = crate::Timeline::<(u32, u32)>::default();
             timeline.insert(a).unwrap();
             timeline.insert(b).unwrap();
@@ -75,19 +75,25 @@ mod tests {
 pub trait TimelineItem {
     type Pos;
     fn start(&self) -> Self::Pos;
-    fn end(&self)   -> Self::Pos;
+    fn end(&self) -> Self::Pos;
 }
 
 #[derive(Default)]
-pub struct Timeline<T: TimelineItem + Sized> where T::Pos: std::cmp::Ord {
-    items: std::collections::BTreeMap<T::Pos, T>
+pub struct Timeline<T: TimelineItem + Sized>
+where
+    T::Pos: std::cmp::Ord,
+{
+    items: std::collections::BTreeMap<T::Pos, T>,
 }
 
-impl<T: TimelineItem> Timeline<T> where T::Pos: Copy + std::cmp::Ord + std::fmt::Display {
-    pub fn insert(&mut self, item: T) -> Result<(), T>{
+impl<T: TimelineItem> Timeline<T>
+where
+    T::Pos: Copy + std::cmp::Ord + std::fmt::Display,
+{
+    pub fn insert(&mut self, item: T) -> Result<(), T> {
         if self.is_insertable(&item) {
             self.items.insert(item.start(), item);
-            return Ok(())
+            return Ok(());
         }
         Err(item)
     }
@@ -98,11 +104,15 @@ impl<T: TimelineItem> Timeline<T> where T::Pos: Copy + std::cmp::Ord + std::fmt:
         let last_item_in_ahead_range = self.items.range(..item.end()).last().map(|(_, item)| item);
         if last_item_in_ahead_range.map_or(false, |last_item| item.start() < last_item.end()) {
             println!("head");
-            return false // head is overwrapped
+            return false; // head is overwrapped
         }
-        let first_item_in_behind_range = self.items.range(item.start()..).next().map(|(_, item)| item);
+        let first_item_in_behind_range = self
+            .items
+            .range(item.start()..)
+            .next()
+            .map(|(_, item)| item);
         if first_item_in_behind_range.map_or(false, |first_item| first_item.start() < item.end()) {
-            return false // tail is overwrapped
+            return false; // tail is overwrapped
         }
         true
     }
