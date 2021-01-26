@@ -12,7 +12,7 @@ mod tests {
 
     mod insertion {
         fn insertion_test(a: (u32, u32), b: (u32, u32)) {
-            let mut timeline = crate::Timeline::<(u32, u32)>::default();
+            let mut timeline = crate::Timeline::<(u32, u32)>::new();
             timeline.insert(a).unwrap();
             timeline.insert(b).unwrap();
         }
@@ -55,7 +55,7 @@ mod tests {
 
     mod get {
         fn inserted(a: (u32, u32), b: (u32, u32)) -> crate::Timeline<(u32, u32)> {
-            let mut timeline = crate::Timeline::<(u32, u32)>::default();
+            let mut timeline = crate::Timeline::<(u32, u32)>::new();
             timeline.insert(a).unwrap();
             timeline.insert(b).unwrap();
             timeline
@@ -90,6 +90,11 @@ impl<T: TimelineItem> Timeline<T>
 where
     T::Pos: Copy + std::cmp::Ord + std::fmt::Display,
 {
+    pub fn new() -> Self {
+        Self {
+            items: std::collections::BTreeMap::new()
+        }
+    }
     pub fn insert(&mut self, item: T) -> Result<(), T> {
         if self.is_insertable(&item) {
             self.items.insert(item.start(), item);
